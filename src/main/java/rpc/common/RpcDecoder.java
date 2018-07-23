@@ -24,7 +24,7 @@ public class RpcDecoder extends ByteToMessageDecoder {
         byte[] request = new byte[length];
         in.readBytes(request);
         Object obj = SerializableUtil.decode(request);
-        logger.info("receive rpcRequest : {}", obj);
+        logger.info("receive : {}", obj);
         out.add(obj);
     }
 }

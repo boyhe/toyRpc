@@ -1,0 +1,30 @@
+{
+    "run": {
+        "default": "",
+        "items": [
+            {
+                "name": "wrpc",
+                "projectName": "wrpc",
+                "workingDirectory": "/Users/boyhe/learnAnything/wrpc",
+                "args": [],
+                "vmargs": [],
+                "env": {},
+                "preLaunchTask": ""
+            }
+        ]
+    },
+    "debug": {
+        "default": "",
+        "items": [
+            {
+                "name": "wrpc",
+                "projectName": "wrpc",
+                "workingDirectory": "/Users/boyhe/learnAnything/wrpc",
+                "args": [],
+                "vmargs": [],
+                "env": {},
+                "preLaunchTask": ""
+            }
+        ]
+    }
+}

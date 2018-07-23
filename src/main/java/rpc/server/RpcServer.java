@@ -52,7 +52,7 @@ public class RpcServer implements ApplicationContextAware, InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        //两个多线程事件loop，boss是用来接受连接的，worker是用来boss接受的连接的流量
+        //两个多线程事件loop，boss是用来接受连接的，worker是用来处理boss接受的连接
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {

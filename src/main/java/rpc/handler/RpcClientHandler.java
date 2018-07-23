@@ -1,5 +1,6 @@
 package rpc.handler;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import rpc.common.RpcDecoder;
 import rpc.common.RpcEncoder;
 import rpc.common.RpcRequest;
@@ -11,6 +12,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.concurrent.ExecutionException;
 
 public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
     private static final Logger logger = LoggerFactory.getLogger(RpcClientHandler.class);
@@ -34,7 +36,7 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
         }
     }
 
-    public RpcResponse send(RpcRequest request) throws InterruptedException {
+    public RpcResponse send(RpcRequest request) throws InterruptedException, ExecutionException {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
             Bootstrap bootstrap = new Bootstrap();
@@ -49,10 +51,11 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
                     });
             ChannelFuture cf = bootstrap.connect(host, port).sync();
             cf.channel().writeAndFlush(request).sync();
-            synchronized (object){
+            synchronized (object) {
                 object.wait();
             }
-            if(response != null) cf.channel().closeFuture().sync();
+            if (response != null)
+                cf.channel().closeFuture().sync();
             return response;
         } finally {
             workerGroup.shutdownGracefully();
