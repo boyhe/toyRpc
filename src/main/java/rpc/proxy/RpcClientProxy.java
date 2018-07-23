@@ -10,25 +10,31 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.UUID;
 
-@Component
+
 public class RpcClientProxy {
     private Class<?> serviceInterface;
     private String remoteServerIP;
     private int remoteServerPort;
+    RpcClientHandler clientHandler;
 
     public RpcClientProxy() {
     }
 
+    public RpcClientProxy(Class<?> serviceInterface, String remoteServerIP, int remoteServerPort) {
+        this.serviceInterface = serviceInterface;
+        this.remoteServerIP = remoteServerIP;
+        this.remoteServerPort = remoteServerPort;
+        clientHandler = new RpcClientHandler(remoteServerIP, remoteServerPort);
+    }
 
     @SuppressWarnings("unchecked")
-    public <T> T createObject(){
+    public <T> T createObject() {
 
         return (T) Proxy.newProxyInstance(serviceInterface.getClassLoader(), new Class<?>[]{serviceInterface}, new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 RpcRequest request = new RpcRequest(UUID.randomUUID().toString(),
-                    serviceInterface.getName(), method.getName(), method.getParameterTypes(), args);
-                RpcClientHandler clientHandler = new RpcClientHandler(remoteServerIP, remoteServerPort);
+                        serviceInterface.getName(), method.getName(), method.getParameterTypes(), args);
                 RpcResponse response = clientHandler.send(request);
                 return response.getResult();
             }

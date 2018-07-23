@@ -17,10 +17,19 @@ public class RpcClientTest {
     @Test
     public void testHelloService() {
         StopWatch stopWatch = new StopWatch("testHelloService");
-        stopWatch.start();
-        RpcClientProxy proxy = new RpcClientProxy().setServiceInterface(HelloService.class).setRemoteServerIP(remoteServerIP).setRemoteServerPort(remoteServerPort);
+        stopWatch.start("1");
+        RpcClientProxy proxy = new RpcClientProxy(HelloService.class, remoteServerIP, remoteServerPort);
         HelloService service = proxy.createObject();
-        System.out.println(service.hello("boyhe"));
+        System.out.println(service.hello("boyhe1"));
+        stopWatch.stop();
+        stopWatch.start("2");
+        System.out.println(service.hello("boyhe2"));
+        stopWatch.stop();
+        stopWatch.start("3");
+        System.out.println(service.hello("boyhe3"));
+        stopWatch.stop();
+        stopWatch.start("4");
+        System.out.println(service.hello("boyhe4"));
         stopWatch.stop();
         logger.info(stopWatch.prettyPrint());
 
@@ -29,13 +38,21 @@ public class RpcClientTest {
     @Test
     public void testPersonService() throws Exception {
         StopWatch stopWatch = new StopWatch("testPersonService");
-        stopWatch.start();
-        RpcClientProxy proxy = new RpcClientProxy().setServiceInterface(PersonService.class).setRemoteServerIP(remoteServerIP).setRemoteServerPort(remoteServerPort);
+        stopWatch.start("0");
+        RpcClientProxy proxy = new RpcClientProxy(PersonService.class, remoteServerIP, remoteServerPort);
         PersonService service = proxy.createObject();
         System.out.println(service.getInfo(0));
+        stopWatch.stop();
+        stopWatch.start("1");
         System.out.println(service.getInfo(1));
+        stopWatch.stop();
+        stopWatch.start("2");
         System.out.println(service.getInfo(2));
+        stopWatch.stop();
+        stopWatch.start("5");
         System.out.println(service.getInfo(5));
+        stopWatch.stop();
+        stopWatch.start("50");
         System.out.println(service.getInfo(50));
         stopWatch.stop();
         logger.info(stopWatch.prettyPrint());

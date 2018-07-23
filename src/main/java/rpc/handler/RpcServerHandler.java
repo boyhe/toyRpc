@@ -32,7 +32,7 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
             response.setException((Exception) cause);
 
         }
-        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        ctx.writeAndFlush(response);
     }
 
     //TODO 细化异常，写一个异常类来封装rpc中的异常

@@ -12,6 +12,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.ExecutionException;
 
 public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
@@ -20,6 +21,8 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
     private int port;
 
     private RpcResponse response;
+    private ChannelFuture cf;
+    private volatile boolean connected = false;
 
     private static final Object object = new Object();
 
@@ -36,35 +39,35 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
         }
     }
 
-    public RpcResponse send(RpcRequest request) throws InterruptedException, ExecutionException {
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
-        try {
-            Bootstrap bootstrap = new Bootstrap();
-            bootstrap.group(workerGroup).channel(NioSocketChannel.class).option(ChannelOption.SO_KEEPALIVE, true)
-                    .handler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new RpcDecoder())
-                                    .addLast(new RpcEncoder())
-                                    .addLast(RpcClientHandler.this);
-                        }
-                    });
-            ChannelFuture cf = bootstrap.connect(host, port).sync();
-            cf.channel().writeAndFlush(request).sync();
-            synchronized (object) {
-                object.wait();
-            }
-            if (response != null)
-                cf.channel().closeFuture().sync();
-            return response;
-        } finally {
-            workerGroup.shutdownGracefully();
+    public RpcResponse send(RpcRequest request) throws InterruptedException {
+        if (!connected) initClient();
+        cf.channel().writeAndFlush(request).sync();
+        synchronized (object) {
+            object.wait();
         }
+        return response;
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         logger.error("client caught exception", cause);
         ctx.close();
+    }
+
+    private void initClient() throws InterruptedException {
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        Bootstrap bootstrap = new Bootstrap();
+        bootstrap.group(workerGroup).channel(NioSocketChannel.class).option(ChannelOption.SO_KEEPALIVE, true)
+                .handler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel ch) throws Exception {
+                        ch.pipeline().addLast(new RpcDecoder())
+                                .addLast(new RpcEncoder())
+                                .addLast(RpcClientHandler.this);
+                    }
+                });
+        cf = bootstrap.connect(host, port).sync();
+        logger.info("cf.isSuccess: {}", cf.isSuccess());
+        if (cf.isSuccess()) connected = true;
     }
 }
